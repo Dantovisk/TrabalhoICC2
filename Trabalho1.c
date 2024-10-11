@@ -11,28 +11,49 @@ typedef struct {
     int hh;
     int mm;
     int ss;
-} horario;
+} HORARIO;
 
 /* Armazena informações de um processo */
 typedef struct {
     int prior;
-    horario chegada;
+    HORARIO chegada;
     char descricao[MAX_DESCR];
 
     // variavel auxiliar que concatena os tempos de chegada
     // dessa forma será muito mais fácil ordenar os elementos
     int valor;
-} celula;
+} CELULA;
 
 /* Lista para lidar com os processos */
 typedef struct {
     int tam;
-    celula *celulaPrior [MAXN];
-    celula *celulaTempo [MAXN];
-} processos;
+    CELULA *celulaPrior [MAXN];
+    CELULA *celulaTempo [MAXN];
+} PROCESSOS;
 
-void quicksort(){
+// Quick Sort baseado em um vetor de inteiros por enquanto
+void quickSort(int *vet, int inicio, int fim){
+    int i = inicio;
+    int j = fim;
+    int pivo = vet[(i + j)/2]; // pivo medio, pode ser usado mediana de 3
+    
+    while(i <= j){
+        while(vet[i] < pivo) i++;
+        while(vet[j] > pivo) j--;
+        
+        if(i <= j){
+            int aux = vet[i];
+            vet[i] = vet[j];
+            vet[j] = aux;
+            i++;
+            j--;
+        }
+    }
 
+    if(j > inicio) quickSort(vet, inicio, j);
+    if(i < fim) quickSort(vet, i, fim);
+
+    return;
 }
 
 //começando do fim da lista, vai deslocando todos os elementos
@@ -47,21 +68,17 @@ void removeCelula(){
 
 }
 
-celula *ciarCelula(int prior, int hh, int mm, int ss, const char descricao[]){
-    celula *c1 = (celula*)malloc(sizeof(celula));
-    c1->chegada.hh = hh;
-    c1->chegada.mm = mm;
-    c1->chegada.ss = ss;
+CELULA *criarCelula(void){
+    CELULA *c = (CELULA *) malloc(sizeof(CELULA));
+    if(c != NULL){
+        scanf("%d %d:%d:%d %s", &c->prior, &c->chegada.hh, &c->chegada.mm, &c->chegada.ss, c->descricao);
+        c->valor = (c->chegada.hh << 20) + (c->chegada.mm << 10) + c->chegada.ss;
+    }
 
-    c1->valor = (hh << 20) + (mm << 10) + ss;
-
-    c1->prior = prior;
-    strcpy(c1->descricao, descricao);
-
-    return c1;
+    return c;
 }
 
-void PrintarProcessos(celula *celulas[], int n){
+void printarProcessos(CELULA *celulas[], int n){
     for(int i=0; i<n; i++){
         printf("%02d %02d:%02d:%02d %s\n", celulas[i]->prior, celulas[i]->chegada.hh, 
         celulas[i]->chegada.mm, celulas[i]->chegada.ss, celulas[i]->descricao);
@@ -70,58 +87,53 @@ void PrintarProcessos(celula *celulas[], int n){
 }
 
 int main(){
-    bool quickViavel = true;
-    char keyword[10] ;
+    bool quickViavel = true; // O quickSort é feito somente no primeiro print.
+    char keyword[10];
+    PROCESSOS terminal1;
 
-    scanf("%s", keyword);
+    do{
+        scanf("%s", keyword);
 
-    processos terminal1;
-
-    while(strcmp(keyword, "quit") != 0){
-        int hh, mm, ss, prior;
-        char descricao[100];
-
+        // Comando "add".
         if(strcmp(keyword, "add") == 0){
-            scanf("%d %d:%d:%d %s", &prior, &hh, &mm, &ss, descricao);
-            celula *c1 = ciarCelula(prior, hh, mm, ss, descricao);
+            CELULA *c1 = criarCelula();
             terminal1.celulaPrior[terminal1.tam] = c1;
             terminal1.celulaTempo[terminal1.tam] = c1;
             terminal1.tam++;
 
             //caso ja tenha realizado o quicksort
-            if(!quickViavel) insereOrdenado();
+            if(!quickViavel) 
+                insereOrdenado();
         }
+
+        // Comando "next"
         else if(strcmp(keyword, "next") == 0){
             if(quickViavel){
-                quicksort();
+                quickSort();
                 quickViavel = false;
             }
-
-        } 
-        else if(strcmp(keyword, "exec") == 0){
-            removeCelula();
         }
+
+        // Comando "exec"
+        else if(strcmp(keyword, "exec") == 0)
+            removeCelula();
+        
+        // Comando "pinto"
         else if(strcmp(keyword, "print") == 0){
             if(quickViavel){
-                quicksort();
+                quickSort();
                 quickViavel = false;
             }
 
             char key;
             scanf(" -%c", &key);
 
-            if(key == 'p'){
-                PrintarProcessos(terminal1.celulaPrior, terminal1.tam);
-            } 
-            else if(key =='t'){
-                PrintarProcessos(terminal1.celulaTempo, terminal1.tam);
-            }
-            
-            
+            if(key == 'p')
+                printarProcessos(terminal1.celulaPrior, terminal1.tam);
+            else if(key == 't')
+                printarProcessos(terminal1.celulaTempo, terminal1.tam);
         }
 
-
-        scanf("%s", keyword);
-    }
+    } while(strcmp(keyword, "quit") != 0);
 
 }
