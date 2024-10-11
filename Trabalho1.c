@@ -31,27 +31,35 @@ typedef struct {
     CELULA *celulaTempo [MAXN];
 } PROCESSOS;
 
-// Quick Sort baseado em um vetor de inteiros por enquanto
-void quickSort(int *vet, int inicio, int fim){
+// Quick Sort com celular
+void quickSort(CELULA *vet[], int inicio, int fim, bool isPrior){
     int i = inicio;
     int j = fim;
-    int pivo = vet[(i + j)/2]; // pivo medio, pode ser usado mediana de 3
+    CELULA *pivo = vet[(i + j)/2]; // pivo medio, pode ser usado mediana de 3
     
     while(i <= j){
-        while(vet[i] < pivo) i++;
-        while(vet[j] > pivo) j--;
-        
+        if (isPrior)
+        {
+            while(vet[i]->prior < pivo->prior) i++;
+            while(vet[j]->prior > pivo->prior) j--;
+        }
+        else{
+            while(vet[i]->valor < pivo->valor) i++;
+            while(vet[j]->valor > pivo->valor) j--;
+        }
+
         if(i <= j){
-            int aux = vet[i];
+            CELULA *aux = vet[i];
             vet[i] = vet[j];
             vet[j] = aux;
             i++;
             j--;
         }
+        
     }
-
-    if(j > inicio) quickSort(vet, inicio, j);
-    if(i < fim) quickSort(vet, i, fim);
+    
+    if(j > inicio) quickSort(vet, inicio, j, isPrior);
+    if(i < fim) quickSort(vet, i, fim, isPrior);
 
     return;
 }
@@ -109,7 +117,8 @@ int main(){
         // Comando "next"
         else if(strcmp(keyword, "next") == 0){
             if(quickViavel){
-                quickSort();
+                quickSort(terminal1.celulaPrior, 0, terminal1.tam-1, true);
+                quickSort(terminal1.celulaTempo, 0, terminal1.tam-1, false);
                 quickViavel = false;
             }
         }
@@ -119,9 +128,11 @@ int main(){
             removeCelula();
         
         // Comando "pinto"
+        // HAaha muito engraçado sr. pedro 2
         else if(strcmp(keyword, "print") == 0){
             if(quickViavel){
-                quickSort();
+                quickSort(terminal1.celulaPrior, 0, terminal1.tam-1, true);
+                quickSort(terminal1.celulaTempo, 0, terminal1.tam-1, false);
                 quickViavel = false;
             }
 
