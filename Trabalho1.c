@@ -28,7 +28,7 @@ typedef struct {
 typedef struct {
     int tam;
     celula *celulaPrior [MAXN];
-    celula *celulaHora [MAXN];
+    celula *celulaTempo [MAXN];
 } processos;
 
 void quicksort(){
@@ -47,7 +47,7 @@ void removeCelula(){
 
 }
 
-celula *ciarCelula(int prior, int hh, int mm, int ss, int descricao){
+celula *ciarCelula(int prior, int hh, int mm, int ss, const char descricao[]){
     celula *c1 = (celula*)malloc(sizeof(celula));
     c1->chegada.hh = hh;
     c1->chegada.mm = mm;
@@ -56,13 +56,17 @@ celula *ciarCelula(int prior, int hh, int mm, int ss, int descricao){
     c1->valor = (hh << 20) + (mm << 10) + ss;
 
     c1->prior = prior;
-    c1->descricao = descricao;
+    strcpy(c1->descricao, descricao);
 
     return c1;
 }
 
-void PrintarProcessos(processos terminal1){
-
+void PrintarProcessos(celula *celulas[], int n){
+    for(int i=0; i<n; i++){
+        printf("%02d %02d:%02d:%02d %s\n", celulas[i]->prior, celulas[i]->chegada.hh, 
+        celulas[i]->chegada.mm, celulas[i]->chegada.ss, celulas[i]->descricao);
+    }
+    
 }
 
 int main(){
@@ -81,7 +85,7 @@ int main(){
             scanf("%d %d:%d:%d %s", &prior, &hh, &mm, &ss, descricao);
             celula *c1 = ciarCelula(prior, hh, mm, ss, descricao);
             terminal1.celulaPrior[terminal1.tam] = c1;
-            terminal1.celulaHora[terminal1.tam] = c1;
+            terminal1.celulaTempo[terminal1.tam] = c1;
             terminal1.tam++;
 
             //caso ja tenha realizado o quicksort
@@ -102,8 +106,18 @@ int main(){
                 quicksort();
                 quickViavel = false;
             }
+
+            char key;
+            scanf(" -%c", &key);
+
+            if(key == 'p'){
+                PrintarProcessos(terminal1.celulaPrior, terminal1.tam);
+            } 
+            else if(key =='t'){
+                PrintarProcessos(terminal1.celulaTempo, terminal1.tam);
+            }
             
-            PrintarProcessos(terminal1);
+            
         }
 
 
