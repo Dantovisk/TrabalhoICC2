@@ -247,4 +247,10 @@ int main(){
 
     } while(strcmp(keyword, "quit") != 0);
 
+    for(int i = 0; i < terminal1.tam; i++){
+        free(terminal1.celulaPrior[i]);
+        terminal1.celulaPrior[i] = NULL;
+    }
+
+    return 0;
 }
