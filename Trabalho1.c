@@ -172,7 +172,8 @@ int main(){
     bool quickViavel = true; // O quickSort é feito somente no primeiro print.
     char keyword[10];
     PROCESSOS terminal1;
-
+    terminal1.tam = 0;
+    
     do{
         scanf("%s", keyword);
 
