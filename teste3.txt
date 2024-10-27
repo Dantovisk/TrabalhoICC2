@@ -1,0 +1,11 @@
+add 9 11:05:41 firefox
+add 14 06:15:02 openoffice
+add 5 05:26:18 xterm
+add 7 10:44:34 emacs
+print -p
+print -t
+change -p 5|7
+print -p
+change -p 14|9
+print -p
+quit

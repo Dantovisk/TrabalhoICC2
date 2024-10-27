@@ -1,0 +1,11 @@
+next -p
+next -t
+print -t
+print -p
+change -p 6|10
+change -t 06:21:59|02:22:19
+exec -t
+exec -p
+exec -p
+exec -t
+quit
