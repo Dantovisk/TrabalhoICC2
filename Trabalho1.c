@@ -5,7 +5,6 @@
 
 #define MAX_DESCR 100
 #define MAXN 1000
-#define INF 100000007  
 
 /* Armazena um horário de chegada 
 hh: horas
@@ -33,36 +32,26 @@ typedef struct celula_ {
 
 /* Lista para lidar com os processos
 tam: quantidade de elementos
-celulaPrior: uma célula ordenada pela prioridade
-celulaTempo: uma célula ordenada pelo tempo 
+priorNaoOrdenados: número que acumula a quantidade de elementos adicionados em celulaPrior, sem ter dado sort
+tempoNaoOrdenados: número que acumula a quantidade de elementos adicionados em celulaTempo, sem ter dado sort
+celulaPrior: conjunto de células com olhar para a prioridade
+celulaTempo: conjunto de células com olhar para o tempo 
+bestPrior: ponteiro para a maior prioridade
+bestTempo: ponteiro para o menor tempo
 */
 typedef struct processos_ {
     int tam;
-    int priorNaoOrdenados; //numero de elementos recentemente adicionados em celulaPrior
-    int tempoNaoOrdenados; //numero de elementos recentemente adicionados em celulaTempo
+    int priorNaoOrdenados; 
+    int tempoNaoOrdenados; 
     CELULA *celulaPrior [MAXN];
     CELULA *celulaTempo [MAXN];
     CELULA *bestPrior;
     CELULA *bestTempo;
 } PROCESSOS;
 
-
-/* A função inicializa as células com valores absurdos para ser possível*/
-CELULA *inicializaBestCelula() {
-    CELULA *celula = (CELULA *) malloc(sizeof(CELULA));
-    if(celula == NULL) {
-        printf("Erro na alocação");
-        exit(1);
-    } 
-    celula->prior = -1;
-    celula->valor = INF;
-    memset(celula->descricao, 0, sizeof(celula->descricao));
-    celula->chegada = (HORARIO) {INF, INF, INF};
-    return celula;
-}
-
 /* A função faz a alocação dinâmica da memória utilizada para a struct CELULA, já recebendo do usuário os valores que serão
-inicializados nos campos da struct, sejam eles: a prioridade, o horário, a descrição. Faz-se a conversão do valor.
+inicializados nos campos da struct, sejam eles: a prioridade, o horário, a descrição. Além disso, faz-se a conversão do valor.
+Essa conversão faz que as horas fiquem isoladas, numericamente, dos minutos e estes, dos segundos.
 */
 CELULA *criarCelula(PROCESSOS *terminal){
     CELULA *c = (CELULA *) malloc(sizeof(CELULA));
@@ -79,7 +68,6 @@ CELULA *criarCelula(PROCESSOS *terminal){
     return c;
 }
 
-//Sabemos que 8=D, mas sabemos se C=8?   if(C==8) printf("C=8");
 
 /* A função faz um Quicksort recursivamente, a fim de tornar o vetor ordenado em O(n log n)
 */
@@ -116,6 +104,7 @@ void quickSort(CELULA *vet[], int inicio, int fim, bool isPrior){
     return;
 }
 
+/* A função faz um Insertionsort iterativamente, de tal modo que torna o vetor ordenado em O(n^2) */
 void insertionSort(CELULA *vet[], int n, bool isPrior){
     int i, j;
     CELULA *x;
@@ -144,22 +133,33 @@ void insertionSort(CELULA *vet[], int n, bool isPrior){
     return;
 }
 
+/* Sabendo que o pior caso do Quicksort é aquele para o qual o vetor está ordenado, busca-se utilizá-lo somente para quando 
+o número de mudanças, sem ter ocorrido um sort, é mais significativo. Para casos com poucas alterações para a ordenação, opta-se
+por realizar um InsertionSort, que mesmo sendo O(n^2), para poucas mudanças, deve se sair melhor que o QuickSort. Assim, a partir
+das variáveis 'priorNaoOrdenados' e 'tempoNaoOrdenados' define-se qual dos dois usar. 
+*/
 void ordenar(PROCESSOS *terminal, bool isPrior){
-    int x = (isPrior ? terminal->priorNaoOrdenados : terminal->tempoNaoOrdenados);
+    int x;
+    // x recebe um valor indicando se o vetor está muito ou pouco desordenado
+    if (isPrior) {
+        x = terminal->priorNaoOrdenados;
+        terminal->priorNaoOrdenados = 0;
+    } else {
+        x = terminal->tempoNaoOrdenados;
+        terminal->tempoNaoOrdenados = 0;
+    } 
 
-    //quando o numero de elementos nao ordenados for pequeno realizaremos insertion sort
-    if (x <= 5)
-    {insertionSort((isPrior ? terminal->celulaPrior :terminal->celulaTempo), terminal->tam, isPrior); printf("Insertion sort da silva\n");}
-    else {
-        printf("Quicksort da silva\n");
+    // Quando o número de elementos que não estão necessariamente ordenados for pequeno, realiza-se insertion sort
+    if (x <= 5){
+        insertionSort((isPrior ? terminal->celulaPrior :terminal->celulaTempo), terminal->tam, isPrior); 
+    } else {
         quickSort((isPrior ? terminal->celulaPrior :terminal->celulaTempo), 0, terminal->tam-1, isPrior);
     }
 
-    if (isPrior) terminal->priorNaoOrdenados = 0;
-    else terminal->tempoNaoOrdenados = 0;
 }
 
-/* A função faz a inserção da célula, sem se importar com ordenação, apenas se insere no próximo espaço vago
+/* A função faz a inserção da célula, sem se importar com ordenação, apenas se insere no próximo espaço vago de ambas, Prior e Tempo
+A função tem complexidade O(1), pois não é uma preocupação ordenar o vetor.
 */
 void inserir(CELULA *c1, PROCESSOS *terminal){
     if(terminal->tam < MAXN){
@@ -172,7 +172,10 @@ void inserir(CELULA *c1, PROCESSOS *terminal){
 
     return; 
 }
-
+/* A célula com maior prioridade/menor tempo, a depender do input do usuário, é removida da lista de processos. Para tanto,
+ordena-se o vetor da respectiva categoria e, no outro, faz-se deslocamentos. Como a ordenação do vetor de células é a operação
+mais significativa operacionalmente, a complexidade fica de acordo com o sort escolhido, em O(n^2) ou O(n log n).
+*/
 void removeCelula(PROCESSOS *terminal){
     char key;
     scanf(" -%c", &key);
@@ -180,8 +183,10 @@ void removeCelula(PROCESSOS *terminal){
     if (terminal->tam == 0) return;
 
     if (key == 'p') {
+        // ORDENA O VETOR DE PRIORIDADE, RECEBENDO O ÚLTIMO ELEMENTO, QUE É O DE MAIOR PRIORIDADE
         ordenar(terminal, true);
         CELULA *aux = terminal->celulaPrior[terminal->tam-1];
+        // COMO SOMENTE O VETOR DE PRIORIDADE FICOU ORDENADO, NO VETOR DE CÉLULAS DE TEMPO, REALIZA-SE O SHIFT(DESLOCAMENTO)
         for(int i=0; i < terminal->tam; i++) {
             if(terminal->celulaTempo[i]->prior == aux->prior) {
                 for(int j=i; j < terminal->tam-1; j++) {
@@ -190,12 +195,16 @@ void removeCelula(PROCESSOS *terminal){
                 break;
             }
         }
+        // A MELHOR PRIORIDADE PASSA A SER A SEGUNDA MAIOR PRIODADE
         terminal->bestPrior = terminal->celulaPrior[terminal->tam-2];
+        // É EXECUTADO O PROCESSO DE MAIOR PRIORIDADE E A MEMÓRIA PARA ELE ALOCADA É LIBERADA
         free(aux);
         aux = NULL;
     } else if (key == 't') {
+        // ORDENA O VETOR DE TEMPO, RECEBENDO O ÚLTIMO ELEMENTO, QUE É O DE MENOR TEMPO
         ordenar(terminal, false);
         CELULA *aux = terminal->celulaTempo[terminal->tam-1];
+        // COMO SOMENTE O VETOR DE TEMPO FICOU ORDENADO, NO VETOR DE CÉLULAS DE PRIORIDADE, REALIZA-SE O SHIFT(DESLOCAMENTO)
         for(int i=0; i < terminal->tam; i++) {
             if(terminal->celulaPrior[i]->valor == aux->valor) {
                 for(int j = i; j < terminal->tam-1; j++) {
@@ -203,10 +212,13 @@ void removeCelula(PROCESSOS *terminal){
                 }
             }
         }
+         // A MENOR TEMPO PASSA A SER O SEGUNDO MENOR TEMPO
         terminal->bestTempo = terminal->celulaTempo[terminal->tam-2];
+         // É EXECUTADO O PROCESSO DE MENOR TEMPO E A MEMÓRIA PARA ELE ALOCADA É LIBERADA
         free(aux);
         aux = NULL;
     }
+    // É DECREMENTADO O TAMANHO DA LISTA DE PROCESSOS E, CASO CHEGUE A ZERO, O 'BESTPRIOR' E O 'BESTTEMPO' NÃO EXISTEM MAIS
     terminal->tam--;
     if(terminal->tam == 0){
         terminal->bestTempo = NULL;
@@ -217,7 +229,10 @@ void removeCelula(PROCESSOS *terminal){
 
 
 
-/* A função faz a mudança das informações da célula e, caso ela seja melhor que as outras em tempo e/ou prioridade, troca a vigente
+/* A função faz a mudança da informação de uma célula e, feito isso, é realizada uma ordenação do vetor.
+A maior prioridade/o menor tempo é atualizado sempre para o valor que constar no último elemento do vetor,
+depois que ele já foi ordenado. A complexidade é norteada principalmente pelo tipo de sort optado (QuickSort
+(n log n) ou InsertionSort(n^2)), já que para além disso, o shift dos elementos do vetor é realizado em O(n).
 */
 void mudarCelula(PROCESSOS *terminal){
     char key;
@@ -238,8 +253,8 @@ void mudarCelula(PROCESSOS *terminal){
                 terminal->celulaTempo[i]->prior = prior_new;
             }
         }
+        // ORDENA E DEFINE O MELHOR
         ordenar(terminal, true);
-
         terminal->bestPrior = terminal->celulaPrior[terminal->tam-1];
 
     } else if(key == 't'){
@@ -262,17 +277,21 @@ void mudarCelula(PROCESSOS *terminal){
                 terminal->celulaPrior[i]->valor = valor_new;
             }
         }
+        // ORDENA E DEFINE O MELHOR
         ordenar(terminal, false);
         terminal->bestTempo = terminal->celulaTempo[terminal->tam-1];
     }
     return;
 }
 
-/* A função printa todos os processos, com a prioridade, o horário e a descrição
+/* A função printa todos os processos, com a prioridade, o horário e a descrição, o vetor é percorrido do último índice ao primeiro
 */
 void printarProcessos(CELULA *celulas[], int n){
     for(int i = n-1; i >= 0; i--){
         printf("%02d %02d:%02d:%02d %s\n", celulas[i]->prior, celulas[i]->chegada.hh, celulas[i]->chegada.mm, celulas[i]->chegada.ss, celulas[i]->descricao);
+    }
+    if(n != 0) {    
+        printf("\n");
     }
 }
 
@@ -281,10 +300,10 @@ int main(void){
 
     PROCESSOS terminal;
     
+    // INICIALIZAÇÃO DE CAMPOS DA STRUCT TERMINAL
     terminal.tam = 0;
     terminal.tempoNaoOrdenados = 0;
     terminal.priorNaoOrdenados = 0; 
-
     terminal.bestPrior = NULL;
     terminal.bestTempo = NULL;
     
@@ -297,32 +316,35 @@ int main(void){
             inserir(c1, &terminal);
         }
 
-        // Comando "exec"
+        // Comando "exec" (COMPLEXIDADE VARIÁVEL, SEGUNDO O TIPO DE SORT)
         else if(strcmp(keyword, "exec") == 0){
             removeCelula(&terminal);
         }
 
-        // Comando "next" O(1)
+        // Comando "next" O(1) 
         else if(strcmp(keyword, "next") == 0){
             char key;
             scanf(" -%c", &key);
+            // PRINTA A RESPECTIVA VARIÁVEL 'BEST____', DE ACORDO COM O INPUT
             if(key == 'p') {
                 if(terminal.bestPrior != NULL) {
                     printf("%02d %02d:%02d:%02d %s\n", terminal.bestPrior->prior, terminal.bestPrior->chegada.hh, terminal.bestPrior->chegada.mm, terminal.bestPrior->chegada.ss, terminal.bestPrior->descricao);
+                    printf("\n");
                 }
             } else if(key == 't') {
                 if(terminal.bestTempo != NULL) {
                     printf("%02d %02d:%02d:%02d %s\n", terminal.bestTempo->prior, terminal.bestTempo->chegada.hh, terminal.bestTempo->chegada.mm, terminal.bestTempo->chegada.ss, terminal.bestTempo->descricao);
+                    printf("\n");
                 }
             }
         }
         
-        // Comando "change"
+        // Comando "change" (COMPLEXIDADE VARIÁVEL, SEGUNDO O TIPO DE SORT)
         else if(strcmp(keyword, "change") == 0){
             mudarCelula(&terminal);
         }
         
-        // Comando "print"
+        // Comando "print" (COMPLEXIDADE VARIÁVEL, SEGUNDO O TIPO DE SORT)
         else if(strcmp(keyword, "print") == 0){
             char key;
             scanf(" -%c", &key);
@@ -337,6 +359,7 @@ int main(void){
 
     } while(strcmp(keyword, "quit") != 0);
 
+    // LIBERA TODA A MEMÓRIA ALOCADA DAS CÉLULAS
     for(int i = 0; i < terminal.tam; i++){
         free(terminal.celulaPrior[i]);
         terminal.celulaPrior[i] = NULL;

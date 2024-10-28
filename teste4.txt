@@ -71,6 +71,7 @@ add 4 16:19:47 gcalc
 add 17 22:40:32 x-session
 add 1 07:33:25 printer-deamon
 add 3 03:53:17 gimp
+change -p 6|23
 next -p 
 next -t
 print -t
