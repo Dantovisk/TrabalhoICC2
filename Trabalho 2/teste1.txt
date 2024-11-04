@@ -1,6 +1,7 @@
 inicio
 P A T O F E I
 progresso
+palavra APTI
 palavra APEA
 palavra APTA
 palavra APTO
@@ -32,8 +33,10 @@ palavra TIPO
 palavra TOPA
 palavra TOPE
 palavra TOPO
+palavra TOME
 progresso
 palavra APEAI
+palavra ALADO
 palavra APEEI
 palavra APEIA
 palavra APEIE
@@ -77,6 +80,7 @@ palavra PAPAIA
 palavra PATETA
 palavra PATIFE
 palavra PATOTA
+palavra PALETA
 palavra PEITAI
 palavra PEITEI
 palavra PEPITA

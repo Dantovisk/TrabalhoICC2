@@ -25,7 +25,9 @@ char *copiarString(const char *original);
 int buscarPalavraBinaria(STRING *palavras, int tamanho, const char *procurada);
 void liberarSoletra(SOLETRA *soletrando);
 
-// Função para configurar as letras permitidas
+/// @brief Função para configurar as letras permitidas
+/// @param letrasPermitidas 
+/// @param letraObrigatoria 
 void configurarLetrasPermitidas(bool *letrasPermitidas, char *letraObrigatoria) {
     scanf(" %c", letraObrigatoria);
     letrasPermitidas[*letraObrigatoria - 'A'] = true;
@@ -37,7 +39,11 @@ void configurarLetrasPermitidas(bool *letrasPermitidas, char *letraObrigatoria) 
     }
 }
 
-// Função para carregar palavras válidas do arquivo
+/// @brief Função para carregar palavras válidas do arquivo
+/// @param soletrando 
+/// @param letrasPermitidas 
+/// @param letraObrigatoria 
+/// @return bool (True/False = indicando se foi possível carregá-las)
 bool carregarPalavrasValidas(SOLETRA *soletrando, bool *letrasPermitidas, char letraObrigatoria) {
     FILE *arquivo = fopen("valid_words.txt", "r");
     if (arquivo == NULL) {
@@ -60,7 +66,12 @@ bool carregarPalavrasValidas(SOLETRA *soletrando, bool *letrasPermitidas, char l
     return true;
 }
 
-// Retorna true se a palavra seguir as regras
+
+/// @brief Função que verifica se a palavra é valida de acordo com as letras propostas pelo usuário
+/// @param palavra 
+/// @param letrasPermitidas 
+/// @param letraObrigatoria 
+/// @return bool (True/False = indicando se a palavra segue as regras)
 bool palavraValida(const char *palavra, bool *letrasPermitidas, char letraObrigatoria) {
     bool encontrouObrigatoria = false;
 
@@ -75,7 +86,8 @@ bool palavraValida(const char *palavra, bool *letrasPermitidas, char letraObriga
     return encontrouObrigatoria;
 }
 
-// Inicializa a estrutura SOLETRA
+/// @brief Inicializa os campos da estrutura SOLETRA
+/// @param soletrando 
 void inicializarSoletra(SOLETRA *soletrando) {
     for (int i = 0; i < 20; i++) {
         soletrando->palavras[i] = NULL;
@@ -84,7 +96,10 @@ void inicializarSoletra(SOLETRA *soletrando) {
     }
 }
 
-// Função para copiar a string manualmente
+
+/// @brief Função auxiliar da função de adicionar palavras, usada para copiar a string manualmente
+/// @param original 
+/// @return CHAR * (Retorna uma cópia da palavra alocada dinamicamente)
 char *copiarString(const char *original) {
     char *copia = malloc(strlen(original) + 1);
     if (copia != NULL) {
@@ -93,7 +108,10 @@ char *copiarString(const char *original) {
     return copia;
 }
 
-// Adiciona uma palavra à estrutura SOLETRA
+
+/// @brief Função que adiciona uma palavra nova à estrutura SOLETRA
+/// @param soletrando 
+/// @param nova 
 void adicionarPalavra(SOLETRA *soletrando, const char *nova) {
     int tamanho = strlen(nova);
     // Verifica se o tamanho está no intervalo de 1 a 19
@@ -119,7 +137,12 @@ void adicionarPalavra(SOLETRA *soletrando, const char *nova) {
     }
 }
 
-// Busca binária para encontrar uma palavra
+
+/// @brief Função que realiza a busca binária, por meio do strcmp, para encontrar a palavra procurada
+/// @param palavras 
+/// @param tamanho 
+/// @param procurada 
+/// @return int (O inteiro do índice em que a palavra se encontra)
 int buscarPalavraBinaria(STRING *palavras, int tamanho, const char *procurada) {
     int esquerda = 0, direita = tamanho - 1;
     while (esquerda <= direita) {
@@ -139,6 +162,8 @@ int buscarPalavraBinaria(STRING *palavras, int tamanho, const char *procurada) {
     return -1;
 }
 
+/// @brief Função que desaloca toda a memória alocada na struct SOLETRA
+/// @param soletrando 
 void liberarSoletra(SOLETRA *soletrando) {
     for (int i = 0; i < 20; i++) {
         if (soletrando->palavras[i] != NULL) {
