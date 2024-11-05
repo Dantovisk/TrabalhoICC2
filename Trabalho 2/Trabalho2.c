@@ -145,7 +145,7 @@ void adicionarPalavra(SOLETRA *soletrando, const char *nova) {
 /// @return int (O inteiro do índice em que a palavra se encontra)
 int buscarPalavraBinaria(STRING *palavras, int tamanho, const char *procurada) {
     int esquerda = 0, direita = tamanho - 1;
-    while (esquerda <= direita) {
+    while (esquerda < direita) {
         int meio = (esquerda + direita) / 2;
         int cmp = strcmp(palavras[meio].palavra, procurada);
 
@@ -155,7 +155,7 @@ int buscarPalavraBinaria(STRING *palavras, int tamanho, const char *procurada) {
         } else if (cmp < 0) {
             esquerda = meio + 1;
         } else {
-            direita = meio - 1;
+            direita = meio;
         }
     }
      // Palavra não encontrada
