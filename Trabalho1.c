@@ -367,7 +367,7 @@ void quickSort(CELULA *vet[], int inicio, int fim, bool isPrior){
 /* A função faz um Insertion Sort iterativamente. 
  * Recebe um vetor de ponteiro de células e o booleano isPrior, responsável por definir  qual dos vetores 
  de célula (Prior ou Tempo) está sendo ordenado. 
- * Complexidade: O(n^2), usado somente para vetores com poucos elementos desordenados. */
+ * Complexidade: O(n^2), usado somente para vetores com poucos elementos desordenados, nesse caso a complexidade se aproxima de O(n). */
 void insertionSort(CELULA *vet[], int n, bool isPrior){
     int i, j;
     CELULA *x;
