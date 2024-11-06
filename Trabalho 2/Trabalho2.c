@@ -207,22 +207,26 @@ int main() {
             if (indice == -1) {
                 printf("palavra invalida\n");
             } else {
-                printf("sucesso +1\n");
-                // Atualiza o status de 'foiEncontrada' da palavra encontrada
-                soletrando.palavras[indiceArray][indice].foiEncontrada = true;
-                // Incrementa o contador de palavras encontradas no índice apropriado, referente ao tamanho
-                soletrando.palavrasEncontradas[indiceArray]++;
-                
-                bool acabou = true;
-                for(int i = 0; i < 20; i++) {
-                    if(soletrando.palavrasEncontradas[i] != soletrando.palavrasTotais[i]) {
-                        acabou = false;
+                if(soletrando.palavras[indiceArray][indice].foiEncontrada == false) {
+                    printf("sucesso +1\n");
+                    // Atualiza o status de 'foiEncontrada' da palavra encontrada
+                    soletrando.palavras[indiceArray][indice].foiEncontrada = true;
+                    // Incrementa o contador de palavras encontradas no índice apropriado, referente ao tamanho
+                    soletrando.palavrasEncontradas[indiceArray]++;
+                    
+                    bool acabou = true;
+                    for(int i = 0; i < 20; i++) {
+                        if(soletrando.palavrasEncontradas[i] != soletrando.palavrasTotais[i]) {
+                            acabou = false;
+                            break;
+                        }
+                    }
+                    if(acabou) {
+                        printf("parabens! voce encontrou todas as palavras\n");
                         break;
                     }
-                }
-                if(acabou) {
-                    printf("parabens! voce encontrou todas as palavras\n");
-                    break;
+                } else {
+                    printf("palavra já encontrada\n");
                 }
             }
         }

@@ -104,6 +104,7 @@ palavra EPOPEIA
 palavra ETIOPIA
 palavra ATAPETAI
 palavra ATAPETEI
+palavra ATAPETEI
 progresso
 solucao
 palavra EPITAFIO
