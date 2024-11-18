@@ -210,7 +210,7 @@ void liberarSoletra(SOLETRA *soletrando) {
 }
 
 int main() {
-    clock_t start = clock();
+    // clock_t start = clock();
     bool letrasPermitidas[26] = {};
     char letraObrigatoria;
     SOLETRA soletrando;
@@ -241,7 +241,7 @@ int main() {
                 printf("palavra invalida\n");
             } else {
                 if(soletrando.palavras[indiceArray][indice].foiEncontrada == false) {
-                    printf("sucesso +1\n");
+                    printf("sucesso + 1\n");
                     // Atualiza o status de 'foiEncontrada' da palavra encontrada
                     soletrando.palavras[indiceArray][indice].foiEncontrada = true;
                     // Incrementa o contador de palavras encontradas no índice apropriado, referente ao tamanho
@@ -283,22 +283,22 @@ int main() {
                     }
                     printf("(%d letras) ", i+1);
                     for (int j = 0; j < soletrando.palavrasTotais[i]; j++) {
-                        if(!soletrando.palavras[i][j].foiEncontrada) {
-                            if (!primeiro) {
-                                printf(", ");
-                            }
-                            printf("%s", soletrando.palavras[i][j].palavra);
-                            primeiro = false;
+                        if (!primeiro) {
+                            printf(", ");
                         }
+                        printf("%s", soletrando.palavras[i][j].palavra);
+                        primeiro = false;
+                        
                     }
                     printf("\n");
                 }
             }
+            printf("fim!\n");
             break;
         }
     }
     liberarSoletra(&soletrando);
-    clock_t end = clock();
-    printf(" -- TEMPO GASTO %Lf --\n", ((long double) (end - start)) / CLOCKS_PER_SEC);
+    // clock_t end = clock();
+    // printf(" -- TEMPO GASTO %Lf --\n", ((long double) (end - start)) / CLOCKS_PER_SEC);
     return EXIT_SUCCESS;
 }
