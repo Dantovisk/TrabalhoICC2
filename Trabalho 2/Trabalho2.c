@@ -1,10 +1,32 @@
+/* Grupo
+ * Pedro Henrique de Sousa Prestes - 15507819
+ * João Gabriel Pieroli da Silva - 15678578
+ * Dante Brito Lourenço - 15447326 */
+
+/* README
+ * Optou-se pela utilização das seguintes estruturas baseadas em listas sequenciais / vetores:
+ * - STRING que armazena uma palavra(vetor de chars) e um booleano que indica se a palavra foi encontrada durante o jogo.
+ * - SOLETRA, armazena uma matriz de STRINGs baseado no número de letras, junto com a quantidade total, encontrada e
+ * capacidade de alocação de memória. É utilizada tal matriz para que facilite a busca sabendo o tamanho das palavras.
+ * 
+ * A inicialização do código é baseado na verificação das palavras que são válidas para o jogo, a partir das letras permitidas,
+ * de dentro do dicionário e armazená-las dentro da estrutura SOLETRA. É utilizado mallocs e reallocs que podem ser ajustados
+ * pelos define MEM_INICIAL e MEM_REALLOC para uso eficiente de memória. 
+ * 
+ * Durante o jogo, a busca binária é usada para achar as palavras no vetor de STRING do tamanho correspondente e verifica se
+ * a palavra existe na estrutura SOLETRA. A lógica para saber se o jogo acabou consiste em comparar as palavras totais e as encontradas.
+ * O progresso e a solução verifica se as palavras com um determinado número de letras existe no SOLETRA e printa.
+ * */
+ 
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h> 
-#define MAX_PALAVRA 100
-#define MAX_LETRAS 7
+#include <time.h>
 
+#define MEM_INICIAL 75
+#define MEM_REALLOC 50
+#define MAX_LETRAS 7
 typedef struct string_ {
     char *palavra;
     bool foiEncontrada;
@@ -14,6 +36,7 @@ typedef struct soletra_ {
     STRING *palavras[20]; 
     int palavrasTotais[20]; 
     int palavrasEncontradas[20];
+    int capacidade[20];
 } SOLETRA;
 
 void configurarLetrasPermitidas(bool *letrasPermitidas, char *letraObrigatoria);
@@ -51,7 +74,7 @@ bool carregarPalavrasValidas(SOLETRA *soletrando, bool *letrasPermitidas, char l
         return false;
     }
 
-    char palavra[MAX_PALAVRA];
+    char palavra[30];
 
     while (fgets(palavra, sizeof(palavra), arquivo)) {
         // Remove a quebra de linha
@@ -93,6 +116,7 @@ void inicializarSoletra(SOLETRA *soletrando) {
         soletrando->palavras[i] = NULL;
         soletrando->palavrasTotais[i] = 0;
         soletrando->palavrasEncontradas[i] = 0;
+        soletrando->capacidade[i] = MEM_INICIAL;
     }
 }
 
@@ -120,11 +144,19 @@ void adicionarPalavra(SOLETRA *soletrando, const char *nova) {
 
         // Aloca memória para palavras no índice, se necessário
         if (soletrando->palavras[indice] == NULL) {
-            soletrando->palavras[indice] = malloc(MAX_PALAVRA * sizeof(STRING));
+            soletrando->palavras[indice] = malloc(soletrando->capacidade[indice] * sizeof(STRING));
             if (soletrando->palavras[indice] == NULL) {
                 printf("ERRO NA ALOCAÇÃO");
                 exit(1);
             }
+        } else if (soletrando->capacidade[indice] == soletrando->palavrasTotais[indice]) {
+            soletrando->capacidade[indice] += MEM_REALLOC;
+            STRING *temp = realloc(soletrando->palavras[indice], soletrando->capacidade[indice] * sizeof(STRING));
+            if (temp == NULL) {
+                printf("ERRO NA REALOCAÇÃO");
+                exit(1);
+            }
+            soletrando->palavras[indice] = temp;
         }
         // Verifica a posição adequada de inserção
         int posicao = soletrando->palavrasTotais[indice];
@@ -178,6 +210,7 @@ void liberarSoletra(SOLETRA *soletrando) {
 }
 
 int main() {
+    clock_t start = clock();
     bool letrasPermitidas[26] = {};
     char letraObrigatoria;
     SOLETRA soletrando;
@@ -195,7 +228,7 @@ int main() {
             }
         }
         else if(strcmp(keyword, "palavra") == 0){
-            char tentativa[MAX_PALAVRA];
+            char tentativa[30];
             scanf("%s", tentativa);
             
             // Calcula o tamanho da palavra tentativa e define o índice apropriado
@@ -265,6 +298,7 @@ int main() {
         }
     }
     liberarSoletra(&soletrando);
-
+    clock_t end = clock();
+    printf(" -- TEMPO GASTO %Lf --\n", ((long double) (end - start)) / CLOCKS_PER_SEC);
     return EXIT_SUCCESS;
 }
